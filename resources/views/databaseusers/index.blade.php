@@ -24,7 +24,7 @@
             </thead>
             <tbody>
           
-                @foreach ($databaseusers as $databaseuser)
+                @foreach ($databaseusers as $databaseuser) 
 
                     <tr>
                         <td>{{ $databaseuser->id }}</td>
