@@ -17,9 +17,11 @@ class AdminBackupController extends Controller
         //$backups = $request->parameter('archives');
         $repo = new RepositoryController();
         $array = $request->input('backups'); // Get all request data
-        var_dump($array);
+        // Decode the JSON string into an array
+        $backupData = json_decode($array, true);
+        var_dump($backupData);
         die;
-        foreach($array as $data){
+        foreach($backupData as $data){
             if (!isset($data['archives'])){
                 continue;
             }
