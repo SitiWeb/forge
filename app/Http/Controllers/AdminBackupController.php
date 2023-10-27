@@ -19,8 +19,7 @@ class AdminBackupController extends Controller
         $array = $request->input('backups'); // Get all request data
         // Decode the JSON string into an array
         $backupData = json_decode($array, true);
-        var_dump($backupData);
-        die;
+     
         foreach($backupData as $data){
             if (!isset($data['archives'])){
                 continue;
