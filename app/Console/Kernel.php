@@ -15,7 +15,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('sync:servers')->everyTwentySeconds(); 
         $schedule->command('sync:sites')->everyTwentySeconds();
         $schedule->command('sync:db')->everyTwentySeconds(); 
-        $schedule->command('sync:db_users')->everyTwentySeconds();
+        $schedule->command('sync:dbusers')->everyTwentySeconds();
         
     }
 

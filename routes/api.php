@@ -19,4 +19,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::post('/receive-backups', [ServerController::class, 'receiveBackupList']);
+Route::post('/receive-backups', [AdminBackupController::class, 'receiveBackupList']);

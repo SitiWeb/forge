@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Adminbackup extends Model
+class Repository extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'backup_id', 'start', 'time', 'archive', 'barchive', 'repository_id'];
+
+    protected $fillable = ['location', 'last_modified', 'repo_id'];
 }
