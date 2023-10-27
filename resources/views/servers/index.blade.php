@@ -4,6 +4,8 @@
 
 @section('content')
     <div class="container">
+        <div class="p-3 bg-white rounded shadow"> 
+            
         <h1>Server List</h1>
         
         <table class="table">
@@ -21,10 +23,12 @@
                 </tr>
             </thead>
             <tbody>
+          
                 @foreach ($servers as $server)
+    
                     <tr>
                         <td>{{ $server->id }}</td>
-                        <td><a href="{{route('servers.show',['id'=>$server->id])}}">{{ $server->name }}</a></td>
+                        <td><a href="{{route('servers.show',['id'=>$server->forge_id])}}">{{ $server->name }}</a></td>
                         <td>{{ $server->size }}</td>
                         <td>{{ $server->region }}</td>
                         <td>{{ $server->ip_address }}</td>
@@ -36,5 +40,6 @@
                 @endforeach
             </tbody>
         </table>
+    </div>
     </div>
 @endsection

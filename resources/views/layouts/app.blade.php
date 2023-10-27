@@ -15,7 +15,15 @@
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include jQuery from a CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Include Bootstrap CSS from a CDN -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Include Bootstrap JavaScript from a CDN -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
 </head>
 <body>
     <div id="app">
@@ -76,8 +84,93 @@
         </nav>
 
         <main class="py-4">
+            @include('toast')
             @yield('content')
         </main>
     </div>
+    <script>
+    function getDeploymentLog(e){
+        var serverId = jQuery(e).data('server-id');
+        var siteId = jQuery(e).data('site-id');
+        var deploymentId = jQuery(e).data('deployment-id');
+        var target = jQuery(e).data('bs-target');
+    
+        jQuery.ajax({
+                  url: `{{env("APP_URL")}}/data/sites/deployment/${serverId}/${siteId}/${deploymentId}`, 
+                  type: 'GET',
+                  // data: { cardId: cardId }, // Send the card ID to the server
+                  success: function (data) {
+                      // Update the card content with the loaded data
+                      jQuery(target + ' .accordion-body' ).html(data.output) ;
+                  },
+                  error: function () {
+                      // Handle AJAX errors if needed
+                  }
+              });
+      }
+
+    </script>
+      @isset($server)
+      @isset($website)
+      
+      <script>
+        let data = {}; // Define data in a higher scope
+        let intervalId; 
+    
+        function getLastConsole(commandId) {
+            jQuery.ajax({
+                url: `{{env("APP_URL")}}/data/sites/command/{{$server->forge_id}}/{{$website->id}}/${commandId}`,
+                type: 'GET',
+                success: function (responseData) {
+                    // Update the card content with the loaded data
+                    if (typeof responseData[0] !== 'undefined') {
+                        jQuery('.live-console').html(responseData[0].output);
+                    }
+                    console.log(responseData[0].status);
+                    if (responseData[0].status !== "running") {
+                        console.log(clearInterval(intervalId)); // Clear the interval when data.status is not "running"
+                    }
+                },
+                error: function () {
+                    // Handle AJAX errors if needed
+                }
+            });
+        }
+    
+        function executeCommand() {
+            var commandInput = jQuery('#command').val();
+            if (commandInput) {
+                $.ajax({
+                    type: "POST",
+                    url: "{{ route('projects.command', ['server' => $server->forge_id, 'site' => $website->id]) }}",
+                    data: {
+                        command: commandInput,
+                        _token: "{{ csrf_token() }}",
+                    },
+                    success: function (responseData) {
+                        // Update data with the received response
+                        data = responseData;
+    
+                        jQuery('#command').val('');
+                        intervalId = setInterval(() => {
+                            getLastConsole(data.id);
+                        }, 2000);
+                    },
+                    error: function () {
+                        // Handle AJAX errors if needed
+                    }
+                });
+            }
+        }
+    </script>
+    
+@endisset
+@endisset
+{{-- resources/views/users/index.blade.php --}}
+
+@include('delete')
+
+
+
 </body>
 </html>

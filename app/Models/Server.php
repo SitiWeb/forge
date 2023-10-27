@@ -12,4 +12,9 @@ class Server extends Model
     protected $fillable = [
         'forge_id','name', 'size', 'region', 'ip_address', 'private_ip_address', 'php_version', 'server_created_at',
     ];
+
+    public function sites()
+    {
+        return $this->hasMany(Site::class, 'server_id', 'forge_id');
+    }
 }

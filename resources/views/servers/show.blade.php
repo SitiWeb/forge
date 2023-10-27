@@ -1,21 +1,31 @@
 @extends('layouts.app')  {{-- Assuming you have a layout --}}
 
 @section('content')
-    <div class="container">
+    <div class="container my-2 ">
+        <div class="row">
+            <div class="col-12">
         @include('message')
-        <h1>Server Details</h1>     
+        <div class="p-3 bg-white rounded shadow"> 
+            < <a href="{{route('servers.index')}}">Back to servers</a>
+        <h3>Server</h3>     
         @include('servers.tables.server')
     </div>
+    </div>
 
-    <div class="container">
-        
-        <h1>Sites Details</h1>    
+    <div class="col-6 my-2">
+        <div class="p-3 bg-white rounded shadow ">
+        <h3>Sites</h3>    
          
         @include('servers.tables.sites')
     </div>
+    </div>
 
-    <div class="container">
-        <h1>Databases Details</h1>     
+    <div class="col-6 my-2">
+        <div class="p-3 bg-white rounded shadow">
+        <h3>Databases</h3>     
         @include('servers.tables.databases')
     </div>
+    </div>
+</div>
+</div>
     @endsection

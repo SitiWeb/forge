@@ -11,13 +11,13 @@ class ServerController extends Controller
     public function index()
     {
         $servers = Server::all(); // Fetch all server records
-
+        
         return view('servers.index', compact('servers'));
     }
 
     public function show($id)
     {
-        $server = Server::findOrFail($id); // Fetch a single server record by ID
+        $server = Server::where('forge_id',$id)->first(); // Fetch a single server record by ID
         // Fetch the list of websites associated with the server from the Forge API
         $forge = new Forge(config('forge.api_key'));
         

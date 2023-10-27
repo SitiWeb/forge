@@ -6,3 +6,14 @@
 
 // Bootstrap
 @import 'bootstrap/scss/bootstrap';
+
+.console{
+    background-color: black;
+    color:white;
+    font-family: "Lucida Console", "Courier New", monospace;
+    padding: 10px;
+}
+.accordion-body.console{
+    max-height: 400px;
+    overflow: scroll;
+}
