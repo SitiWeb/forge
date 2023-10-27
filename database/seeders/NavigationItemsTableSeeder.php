@@ -11,6 +11,8 @@ class NavigationItemsTableSeeder extends Seeder
      */
     public function run()
     {
+
+
         $items = [
             [
                 'id' => 1,
@@ -49,6 +51,11 @@ class NavigationItemsTableSeeder extends Seeder
             ],
         ];
 
-        DB::table('navigation_items')->insert($items);
+        foreach ($items as $item) {
+            DB::table('navigation_items')->updateOrInsert(
+                ['id' => $item['id']],
+                $item
+            );
+        }
     }
 }
