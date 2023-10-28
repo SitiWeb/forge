@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Library\Form;
 use App\Models\Database;
 use App\Models\DatabaseUser;
 use App\Models\Site;
@@ -26,26 +27,87 @@ class SiteController extends Controller
     {
 
         $availableProjectTypes = [
-            'php' => 'General PHP/Laravel Application',
-            'html' => 'Static HTML site',
-            'symfony' => 'Symfony Application',
-            'symfony_dev' => 'Symfony (Dev) Application',
-            'symfony_four' => 'Symfony >4.0 Application',
+            ['value' =>'php', 'label' => 'General PHP/Laravel Application'],
+            ['value' =>'html', 'label' => 'Static HTML site'],
+            ['value' =>'symfony', 'label' => 'Symfony Application'],
+            ['value' =>'symfony_dev', 'label' => 'Symfony (Dev) Application'],
+            ['value' =>'symfony_four', 'label' => 'Symfony >4.0 Application'],
         ];
 
         $availablePHP = [
-            'php72' => '7.2',
-            'php73' => '7.3',
-            'php74' => '7.4',
-            'php80' => '8.0',
-            'php81' => '8.1',
-            'php82' => '8.2',
-            'php83' => '8.3',
+            ['value' => 'php72', 'label'  => '7.2'],
+            ['value' => 'php73', 'label'  =>'7.3'],
+            ['value' => 'php74', 'label' => '7.4'],
+            ['value' => 'php80', 'label' => '8.0'],
+            ['value' => 'php81', 'label' => '8.1'],
+            ['value' => 'php82', 'label' => '8.2'],
+            ['value' => 'php83', 'label' => '8.3'],
         ];
+
         $forge = new Forge(config('forge.api_key'));
         $templates = $forge->nginxTemplates($server);
+        $form = new Form('Create sites', route('projects.store'), 'POST');
+        $form->setSubmitText('Create site');
+        $form->addField('domain', 'text', [
+            'placeholder' => 'domain.com',
+            'label' => 'Enter your domain',
+            'width' => 4,
+            'old' => false,
+        ]);
+        $form->addField('username', 'text', [
+            'placeholder' => 'username',
+            'label' => 'Enter your username',
+            'width' => 4,
+            'old' => false,
+        ]);
+        $form->addField('database', 'text', [
+            'placeholder' => 'database',
+            'label' => 'Enter your database',
+            'width' => 4,
+            'old' => false,
+        ]);
+        $form->addField('aliases', 'text', [
+            'placeholder' => 'aliases',
+            'label' => 'Enter your aliases',
+            'width' => 6,
+            'old' => false,
+        ]);
+        $form->addField('directory', 'text', [
+            'placeholder' => 'directory',
+            'label' => 'Enter your directory',
+            'width' => 6,
+            'old' => false,
+            'value' => '/public',
+        ]);
+        $form->addField('php_version', 'select', [
+            
+            'label' => 'PHP Version',
+            'width' => 4,
+            'old' => false,
+            'selected' => 'php82',
+            'options' => $availablePHP,
+        ]);
+        $form->addField('project_type', 'select', [
+            
+            'label' => 'project_type',
+            'width' => 4,
+            'old' => false,
+            'options' =>  $availableProjectTypes,
+        ]);
+        $form->addField('nginx_template', 'select', [
+            
+            'label' => 'nginx_template',
+            'width' => 4,
+            'old' => false,
+            'default_option' => ['value' => 'default', 'label'  => 'Default'],
+            'options' =>  $templates,
+        ]);
+        $form->addField('server', 'hidden', [
+            'value' => $server,
+        ]);
+        
         $server = Server::where('forge_id', $server)->first();
-        return view('sites.create', compact('availableProjectTypes', 'availablePHP', 'templates', 'server'));
+        return view('sites.create', compact('availableProjectTypes', 'availablePHP', 'templates', 'server','form'));
     }
 
 
@@ -62,18 +124,14 @@ class SiteController extends Controller
             'password' => $randomPassword,
         ];
 
-
-        // $result = $forge->createDatabase($formData['server'],$data);
-
-        // // $database_id = $result->id;
-        // $formData['database'] = $result->name;
         unset($formData['nginx_template']);
         $formData['aliases'] = [];
         $formData['isolated'] = true;
         $forge_server = $formData['server'];
         unset($formData['server']);
         $forge = new Forge(config('forge.api_key'));
-        $result = $forge->createSite($forge_server, $formData);
+        
+        $result = $forge->createSite($forge_server, $formData,false);
         (new DatabaseController())->syncDatabses();
         $database = Database::where('name',  $formData['username'])->first();
         $data = [
@@ -82,7 +140,7 @@ class SiteController extends Controller
             'password' => $randomPassword,
             'databases' => [$database->table_id],
         ];
-        $db_user = ($forge->createDatabaseUser($forge_server, $data));
+        $db_user = ($forge->createDatabaseUser($forge_server, $data, false));
         $user = DatabaseUser::create(
             [
                 'table_user_id' => $db_user->id,
@@ -98,7 +156,7 @@ class SiteController extends Controller
         $database->table_user_id = $db_user->id;
         $database->save();
 
-      
+
         return redirect()->route('servers.show', ['id' => $forge_server])->with('message', 'Site created successfully');
     }
     public function show($server, $site)
@@ -126,9 +184,11 @@ class SiteController extends Controller
 
         $dns = $this->dnsLookup($website->name);
         $website->dns = $dns;
+        $env = ($forge->siteEnvironmentFile($server, $site));
+       
         $deploy_history = $website->getDeploymentHistory();
         $server = Server::where('forge_id', $server)->first();
-        return view('sites.show', compact('website', 'server', 'deploy_log', 'deploy_history'));
+        return view('sites.show', compact('website', 'server', 'deploy_log', 'deploy_history','env'));
     }
 
     function deleteSite(Request $request, $server, $site)
@@ -155,6 +215,36 @@ class SiteController extends Controller
         $forge->deploySite($server, $site, $wait = false);
 
         return redirect()->route('servers.show', ['id' => $server])->with('message', 'Deploy started successfully');
+    }
+
+    function updateEnvFile(Request $request, $server, $site)
+    {
+        $forge = new Forge(config('forge.api_key'));
+        $envContents = $forge->siteEnvironmentFile($server, $site);
+        $site = Site::where('site_id',$site)->first();
+        
+        // Define the variables you want to update
+        $variablesToUpdate = [
+            'DB_HOST' => 'test',
+            'DB_DATABASE' => 'test',
+            'DB_USERNAME' => 'test',
+            'DB_PASSWORD' => 'test',
+        ];
+
+        // Replace the values in the .env file
+        foreach ($variablesToUpdate as $key => $value) {
+            $envContents = preg_replace(
+                "/^{$key}=.*/m",
+                "{$key}={$value}",
+                $envContents
+            );
+        }
+        dd($envContents);
+        // Save the updated contents back to the .env file
+        file_put_contents($envFile, $envContents);
+
+        // Clear the config cache to reflect the changes
+        \Artisan::call('config:clear');
     }
 
     function command(Request $request, $server, $site)

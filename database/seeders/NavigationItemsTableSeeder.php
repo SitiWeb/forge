@@ -49,6 +49,11 @@ class NavigationItemsTableSeeder extends Seeder
                 'title' => 'Database users',
                 'url' => '/databaseusers',
             ],
+            [
+                'id' => 9,
+                'title' => 'Backups',
+                'url' => '/adminbackups',
+            ],
         ];
 
         foreach ($items as $item) {

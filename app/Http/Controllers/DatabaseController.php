@@ -63,6 +63,7 @@ class DatabaseController extends Controller
     public function create()
     {
         $servers = Server::all();
+        
         return view('databases.create',compact('servers'));
     }
 

@@ -44,6 +44,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sites', [SiteController::class, 'index'])->name('projects.index')->middleware('checkRole:Admin,Moderator');
     Route::post('/sites', [SiteController::class, 'store'])->name('projects.store')->middleware('checkRole:Admin,Moderator');
     Route::get('/sites/{server}/{site}/delete', [SiteController::class, 'deleteSite'])->name('projects.delete.site')->middleware('checkRole:Admin,Moderator');
+    Route::get('/sites/{server}/{site}/updateEnvFile', [SiteController::class, 'updateEnvFile'])->name('projects.delete.updateEnvFile')->middleware('checkRole:Admin,Moderator');
+
     Route::get('/sites/{server}/{site}/deploy', [SiteController::class, 'doDeploy'])->name('projects.deploy')->middleware('checkRole:Admin,Moderator');
     Route::get('/sites/{server}/{site}/ssl', [SiteController::class, 'installSsl'])->name('projects.ssl')->middleware('checkRole:Admin,Moderator');
     Route::get('/sites/{server}/{site}/install', [SiteController::class, 'installNew'])->name('projects.install')->middleware('checkRole:Admin,Moderator');
