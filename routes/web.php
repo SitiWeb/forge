@@ -13,6 +13,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SSHKeyController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DatabaseUserController;
+use App\Http\Controllers\FileController;
 use Illuminate\Support\Facades\Auth;
 /*
 |--------------------------------------------------------------------------
@@ -79,7 +80,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/data/sites/loginas/{server}/{site}', [DataController::class, 'loginUrl'])->name('data.login')->middleware('checkRole:Admin,Moderator');
     Route::post('/data/action/{directadmin}/{action}', [DirectadminController::class, 'dataSwitch'])->name('directadmin.action')->middleware('checkRole:Admin,Moderator');
 
+
+
+    Route::get('/files', [FileController::class, 'index'])->name('files.index');
+    
+    Route::post('/files/upload', [FileController::class, 'upload'])->name('uploadFile');
+    Route::get('/files/file/{filename}', [FileController::class, 'show'])->name('showFile');
+    Route::delete('/files/{id}', [FileController::class, 'delete'])->name('files.delete');
+
 });
 
-Route::get('/capture-screenshot', [SiteController::class, 'captureScreenshot']);
-Route::get('/test', [DirectadminController::class, 'index']);
+// Route::get('/capture-screenshot', [SiteController::class, 'captureScreenshot']);
+// Route::get('/test', [DirectadminController::class, 'index']);
