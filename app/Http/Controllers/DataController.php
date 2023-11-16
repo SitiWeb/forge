@@ -48,4 +48,51 @@ class DataController extends Controller
          return response()->json(['message' => 'Server not found'], 404);
         
     }
+
+    function listAdmins($server, $site)
+    {
+        $forge = new Forge(config('forge.api_key'));
+        // dd($request->input('command'));
+        $sitedata = $forge->site($server, $site);
+
+        $command = "cd /home/" . $sitedata->username . "/" . $sitedata->name . $sitedata->directory .  " && wp user list --role=administrator --json";
+        $data = $forge->executeSiteCommand($server, $site, ['command' => $command]);
+        $commandId = ($data->id);
+        $result = $forge->getSiteCommand($server, $site, $commandId);
+
+        while ($result[0]->status == 'running' || $result[0]->status == 'waiting'){
+            $result = $forge->getSiteCommand($server, $site, $commandId);
+            sleep(1);
+        }   
+        $data = json_decode($result[0]->output);
+        return response()->json($data);
+    }
+
+    function loginUrl(Request $request, $server, $site){
+        $forge = new Forge(config('forge.api_key'));
+        // dd($request->input('command'));
+        $sitedata = $forge->site($server, $site);
+
+        $command = "cd /home/" . $sitedata->username . "/" . $sitedata->name . $sitedata->directory .  " && wp login as ". $request->input('user_select') ." --url-only";
+        $data = $forge->executeSiteCommand($server, $site, ['command' => $command]);
+        $commandId = ($data->id);
+        $result = $forge->getSiteCommand($server, $site, $commandId);
+
+        while ($result[0]->status == 'running' || $result[0]->status == 'waiting'){
+            $result = $forge->getSiteCommand($server, $site, $commandId);
+            sleep(1);
+        }   
+        $url = $result[0]->output;
+        if (filter_var($url, FILTER_VALIDATE_URL)) {
+            // $url is a valid URL
+            $data = ['status' => 'success', 'redirect_url' => $url];
+            return redirect( $url );
+        } else {
+            // $url is not a valid URL
+            $data = ['status' => 'error', 'output' =>  $result[0]->output];
+            return response()->json($data);
+        }
+    }
+
+
 }

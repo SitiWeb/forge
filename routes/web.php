@@ -50,6 +50,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sites/{server}/{site}/ssl', [SiteController::class, 'installSsl'])->name('projects.ssl')->middleware('checkRole:Admin,Moderator');
     Route::get('/sites/{server}/{site}/install', [SiteController::class, 'installNew'])->name('projects.install')->middleware('checkRole:Admin,Moderator');
     Route::post('/sites/{server}/{site}/command', [SiteController::class, 'command'])->name('projects.command')->middleware('checkRole:Admin,Moderator');
+    Route::post('/sites/{server}/{site}/loginas', [SiteController::class, 'loginas'])->name('projects.loginas')->middleware('checkRole:Admin,Moderator');
+    Route::get('/sites/{server}/{site}/ssoinstall', [SiteController::class, 'installSSO'])->name('projects.installsso')->middleware('checkRole:Admin,Moderator');
+
     Route::get('/database/{server}/{database}/delete', [SiteController::class, 'deleteDatabase'])->name('projects.delete.database')->middleware('checkRole:Admin,Moderator');
     Route::get('/sites/{server}/{site}', [SiteController::class, 'show'])->name('projects.show')->middleware('checkRole:Admin,Moderator');
     Route::get('/sites/sync', [SiteController::class, 'syncSites'])->name('sites.sync')->middleware('checkRole:Admin,Moderator');
@@ -72,6 +75,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/data/sites/deployment/{server}/{site}/{deployment_id}', [DataController::class, 'deployment'])->name('data.deployment')->middleware('checkRole:Admin,Moderator');
     Route::get('/data/sites/console/{server}/{site}', [DataController::class, 'console'])->name('data.console')->middleware('checkRole:Admin,Moderator');
     Route::get('/data/sites/command/{server}/{site}/{command}', [DataController::class, 'command'])->name('data.command')->middleware('checkRole:Admin,Moderator');
+    Route::get('/data/sites/admins/{server}/{site}', [DataController::class, 'listAdmins'])->name('data.admins')->middleware('checkRole:Admin,Moderator');
+    Route::post('/data/sites/loginas/{server}/{site}', [DataController::class, 'loginUrl'])->name('data.login')->middleware('checkRole:Admin,Moderator');
     Route::post('/data/action/{directadmin}/{action}', [DirectadminController::class, 'dataSwitch'])->name('directadmin.action')->middleware('checkRole:Admin,Moderator');
 
 });

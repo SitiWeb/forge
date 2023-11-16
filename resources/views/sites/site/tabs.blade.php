@@ -1,6 +1,6 @@
 <ul class="nav nav-tabs" id="myTab" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="deploy-tab" data-bs-toggle="tab" data-bs-target="#deploy" type="button" role="tab" aria-controls="deploy" aria-selected="true">Deploy log</button>
+      <button class="nav-link active" id="deploy-tab" data-bs-toggle="tab" data-bs-target="#deploy" type="button" role="tab" aria-controls="deploy" aria-selected="true">Application</button>
     </li>
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="console-tab" data-bs-toggle="tab" data-bs-target="#console" type="button" role="tab" aria-controls="console" aria-selected="false">Console</button>

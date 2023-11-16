@@ -11,7 +11,7 @@
             <div class="col-6">
                 <div class="p-3 bg-white rounded shadow ">
                     @include('sites.site.tabs')
-                    @include('sites.site.repository')
+                    
                 </div>
             </div>
         </div>
@@ -31,4 +31,5 @@
             </div>
         </div>
     </div>
+    {{dd($website->siteLog())}}
 @endsection

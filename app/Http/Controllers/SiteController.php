@@ -107,6 +107,7 @@ class SiteController extends Controller
         ]);
         
         $server = Server::where('forge_id', $server)->first();
+  
         return view('sites.create', compact('availableProjectTypes', 'availablePHP', 'templates', 'server','form'));
     }
 
@@ -187,8 +188,10 @@ class SiteController extends Controller
         $env = ($forge->siteEnvironmentFile($server, $site));
        
         $deploy_history = $website->getDeploymentHistory();
+        $form = $this->loginAsForm($server,$site);
         $server = Server::where('forge_id', $server)->first();
-        return view('sites.show', compact('website', 'server', 'deploy_log', 'deploy_history','env'));
+        
+        return view('sites.show', compact('website', 'server', 'deploy_log', 'deploy_history','env', 'form'));
     }
 
     function deleteSite(Request $request, $server, $site)
@@ -254,6 +257,8 @@ class SiteController extends Controller
         $data = $forge->executeSiteCommand($server, $site, ['command' => $request->input('command')]);
         return response()->json($data);
     }
+
+  
 
     function installSsl(Request $request, $server, $site)
     {
@@ -381,6 +386,41 @@ class SiteController extends Controller
         Site::whereNotIn('site_id', $processedSiteIds)->delete();
     }
 
+    function installSSO($server, $site){
+        $forge = new Forge(config('forge.api_key'));
+        // dd($request->input('command'));
+        $sitedata = $forge->site($server, $site);
+        $command = "cd /home/" . $sitedata->username . "/" . $sitedata->name . $sitedata->directory .  " && wp package uninstall aaemnnosttv/wp-cli-login-command && wp package install aaemnnosttv/wp-cli-login-command && wp login install --activate";
+        $data = $forge->executeSiteCommand($server, $site, ['command' => $command]);
+        $commandId = ($data->id);
+        $result = $forge->getSiteCommand($server, $site, $commandId);
+        while ($result[0]->status == 'running' || $result[0]->status == 'waiting'){
+            sleep(1);
+            $result = $forge->getSiteCommand($server, $site, $commandId);
+        }   
+    }
+
+    public function loginAsForm($server, $site){
+        $form = new Form('Login as', route('data.login', ['server'=> $server, 'site' => $site]), 'POST');
+        $form->setSubmitText('Login as');
+       
+        $form->addField('user_select', 'select', [
+            'label' => 'Login as',
+            'width' => 12,
+            'old' => false,
+            'selected' => 'php82',
+            'options' => [],
+        ]);
+        $form->addField('site', 'hidden', [
+            'value' => $site,
+        ]);
+        
+        $form->addField('server', 'hidden', [
+            'value' => $server,
+        ]);
+        
+        return $form;
+    }
 
 
 
