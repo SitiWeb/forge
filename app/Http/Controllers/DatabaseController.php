@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 use App\Models\Database;
+use App\Models\Site;
+use App\Library\Form;
 use App\Models\DatabaseUser;
 use App\Models\Server;
 use Laravel\Forge\Forge;
@@ -130,15 +132,56 @@ class DatabaseController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $database = Database::find($id);
+        $databaseuser = DatabaseUser::where('name', $database->name)->first();
+        $old_site = false;
+        if ($databaseuser->site_id){
+            $old_site = $databaseuser->site_id;
+        }
+        
+        $form = new Form('Edit database', route('databases.update', ['database'=> $database]), 'PUT');
+        $form->setSubmitText('Edit');
+ 
+        $options = [];
+        $sites = Site::where('server_id',$databaseuser->server_id)->get();
+     
+        foreach($sites as $site){
+            $options[] = ['value' => $site->site_id, 'label'=>$site->name]; 
+        }
+        $form->addField('site', 'select', [
+            'label' => 'Select site',
+            'width' => 12,
+            'old' => $old_site,
+            'selected' => 'php82',
+            'options' => $options,
+        ]);
+     
+        
+      
+        return view('databases.edit', compact('database','databaseuser','form'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+      
+        // Validate the form data as needed
+        $request->validate([
+            'site' => 'required|integer', // Adjust validation rules as needed
+        ]);
+
+
+        // Find the database record to update
+        $database = Database::findOrFail($id);
+        $databaseuser = DatabaseUser::where('name', $database->name)->first();
+        // Update the record with the new data
+        $databaseuser->site_id = $request->input('site'); // Assuming 'site' is the field you want to update
+        $databaseuser->save();
+
+        // Redirect to a success page or return a response as needed
+        return redirect()->route('databases.index')->with('success', 'Record updated successfully');
     }
 
     /**

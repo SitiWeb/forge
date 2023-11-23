@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 use App\Models\Server;
+use App\Models\Cron;
 use Laravel\Forge\Forge;
 use Illuminate\Http\Request;
-
+use App\Http\Controllers\CronController;
 class ServerController extends Controller
 {
 
@@ -21,10 +22,12 @@ class ServerController extends Controller
         // Fetch the list of websites associated with the server from the Forge API
         $forge = new Forge(config('forge.api_key'));
         
+        
         $websites = $forge->sites($server->forge_id);
         $databases = $forge->databases($server->forge_id);
-  
-        return view('servers.show', compact('server', 'websites','databases'));
+        $jobs = Cron::where('server_id', $server->forge_id)->get();
+        
+        return view('servers.show', compact('server', 'websites','databases', 'jobs'));
     }
     public function syncServers()
     {
@@ -64,6 +67,8 @@ class ServerController extends Controller
                     // Add other attributes to create as needed
                 ]);
             }
+            $cron = new CronController();
+            $cron->syncCron($apiServer->id);
         }
 
         // Delete servers that exist in the database but not in the API

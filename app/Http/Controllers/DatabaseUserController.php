@@ -116,16 +116,6 @@ class DatabaseUserController extends Controller
 
 
 
-        if (!$user) {
-            // Handle the case where the user is not found (e.g., show an error message or redirect)
-        }
-
-        // Update the user's password
-        $user->password = bcrypt($request->input('password')); // Hash the password
-
-        // Save the updated user
-        $user->save();
-
         // Redirect to a success page or show a success message
         return redirect()->route('databaseusers.index')->with('success', 'Password updated successfully');
     }

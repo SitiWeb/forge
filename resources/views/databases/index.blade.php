@@ -27,7 +27,7 @@
     
                     <tr>
                         <td>{{ $database->table_id }}</td>
-                        <td>{{ $database->name }}</td>
+                        <td><a href="{{route('databases.edit',['database' => $database->id])}}">{{ $database->name }}</a></td>
                         <td><a href="{{route('users.edit',['user'=>$database->user])}}">{{ $database->user->name }}</a></td>
                         <td>@if($database->table_user)<a href="{{route('databaseusers.show',['databaseuser'=>$database->user])}}">{{ $database->table_user->name }}</a>@endif</td>
                         <td>@if($database->table_user){{ $database->table_user->password }}@endif</td>        

@@ -19,6 +19,20 @@
                     @include('servers.tables.sites')
                 </div>
             </div>
+            <div class="col-12 my-2">
+                <div class="p-3 bg-white rounded shadow ">
+                    <h3>Databases</h3>
+
+                    @include('servers.tables.databases')
+                </div>
+            </div>
+            <div class="col-12 my-2">
+                <div class="p-3 bg-white rounded shadow ">
+                    <h3>Cron jobs</h3>
+
+                    @include('servers.tables.cron')
+                </div>
+            </div>
         </div>
     </div>
 @endsection

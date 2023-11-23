@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\File;
+use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
@@ -76,5 +77,33 @@ class FileController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $file->original_filename . '"',
             'Content-Length' => strlen($fileContents),
         ]);
+    }
+
+    public function createConfigFile($site){
+        $site = Site::where('site_id',$site)->first();
+        dd($site->database);
+        // Define the input and output file paths
+        $inputFilePath = base_path().'\config.yaml'; // Replace with your input file path
+        $outputFilePath = base_path().'\output.yaml'; // Replace with your desired output file path
+
+        // Read the content of the input file
+        $inputContent = file_get_contents($inputFilePath);
+
+        // Define an array of replacements (e.g., [id] => replacement_value)
+        $replacements = [
+            '[hostname]' => 'myhostname',
+            '[prefix]' => 'myprefix',
+            '[source_directories]' => '/path/to/source',
+            // Add more replacements as needed
+        ];
+
+        // Perform the replacements in the content
+        $modifiedContent = str_replace(array_keys($replacements), array_values($replacements), $inputContent);
+    
+        // Save the modified content to the output file
+        file_put_contents($outputFilePath, $modifiedContent);
+
+        // Optionally, display a success message
+        echo "File saved as $outputFilePath\n";
     }
 }

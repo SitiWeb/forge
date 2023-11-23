@@ -5,6 +5,7 @@ use App\Library\Form;
 use App\Models\Database;
 use App\Models\DatabaseUser;
 use App\Models\Site;
+
 use App\Models\Server;
 use Illuminate\Http\Request;
 use Laravel\Forge\Forge;
@@ -156,8 +157,6 @@ class SiteController extends Controller
 
         $database->table_user_id = $db_user->id;
         $database->save();
-
-
         return redirect()->route('servers.show', ['id' => $forge_server])->with('message', 'Site created successfully');
     }
     public function show($server, $site)
@@ -364,6 +363,7 @@ class SiteController extends Controller
             $sites = $forge->sites($apiServer->id);
             foreach ($sites as $website) {
                 $site = Site::where('site_id', $website->id)->first();
+             
                 if ($site) {
                     $site->update([
                         'name' => $website->name,
@@ -374,7 +374,8 @@ class SiteController extends Controller
                         'name' => $website->name,
                         'server_id' => $apiServer->id,
                         'user_id' => 1,
-                        'site_id' => $website->id
+                        'site_id' => $website->id,
+                        'username' => $website->username
                     ]);
                 }
                 // Add the site ID to the processed array
@@ -403,13 +404,18 @@ class SiteController extends Controller
     public function loginAsForm($server, $site){
         $form = new Form('Login as', route('data.login', ['server'=> $server, 'site' => $site]), 'POST');
         $form->setSubmitText('Login as');
-       
+        $sitee = Site::where('site_id', $site)->first();
+        $options = [];
+        foreach($sitee->wordpressAdmins as $admin){
+            $options[] =  ['value' => $admin->wordpress_user_id, 'label' => $admin->username];
+        }
+
         $form->addField('user_select', 'select', [
             'label' => 'Login as',
             'width' => 12,
             'old' => false,
             'selected' => 'php82',
-            'options' => [],
+            'options' => $options,
         ]);
         $form->addField('site', 'hidden', [
             'value' => $site,
@@ -420,6 +426,26 @@ class SiteController extends Controller
         ]);
         
         return $form;
+    }
+
+    public function syncWordpressAdmins($server, $site){
+        $forge = new Forge(config('forge.api_key'));
+        // dd($request->input('command'));
+        $sitedata = $forge->site($server, $site);
+
+        $command = "cd /home/" . $sitedata->username . "/" . $sitedata->name . $sitedata->directory .  " && wp user list --role=administrator --json";
+        $data = $forge->executeSiteCommand($server, $site, ['command' => $command]);
+        $commandId = ($data->id);
+        $result = $forge->getSiteCommand($server, $site, $commandId);
+
+        while ($result[0]->status == 'running' || $result[0]->status == 'waiting'){
+            $result = $forge->getSiteCommand($server, $site, $commandId);
+            sleep(1);
+        }   
+        $data = json_decode($result[0]->output);
+       
+       
+        return response()->json($data);
     }
 
 

@@ -14,6 +14,7 @@ use App\Http\Controllers\SSHKeyController;
 use App\Http\Controllers\DatabaseController;
 use App\Http\Controllers\DatabaseUserController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\CronController;
 use Illuminate\Support\Facades\Auth;
 /*
 |--------------------------------------------------------------------------
@@ -53,7 +54,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/sites/{server}/{site}/command', [SiteController::class, 'command'])->name('projects.command')->middleware('checkRole:Admin,Moderator');
     Route::post('/sites/{server}/{site}/loginas', [SiteController::class, 'loginas'])->name('projects.loginas')->middleware('checkRole:Admin,Moderator');
     Route::get('/sites/{server}/{site}/ssoinstall', [SiteController::class, 'installSSO'])->name('projects.installsso')->middleware('checkRole:Admin,Moderator');
-
+    Route::get('/sites/{server}/{site}/syncadmins', [SiteController::class, 'syncWordpressAdmins'])->name('projects.syncadmins')->middleware('checkRole:Admin,Moderator');
+    Route::get('/wpcron/create/{site}', [CronController::class, 'createWPCron'])->name('wpcron.createcron');
+    Route::get('/wpcron/delete/{site}', [CronController::class, 'deleteWPCron'])->name('wpcron.deletecron');
     Route::get('/database/{server}/{database}/delete', [SiteController::class, 'deleteDatabase'])->name('projects.delete.database')->middleware('checkRole:Admin,Moderator');
     Route::get('/sites/{server}/{site}', [SiteController::class, 'show'])->name('projects.show')->middleware('checkRole:Admin,Moderator');
     Route::get('/sites/sync', [SiteController::class, 'syncSites'])->name('sites.sync')->middleware('checkRole:Admin,Moderator');
@@ -83,11 +86,12 @@ Route::middleware(['auth'])->group(function () {
 
 
     Route::get('/files', [FileController::class, 'index'])->name('files.index');
+    Route::get('/files/config/{site}', [FileController::class, 'createConfigFile'])->name('files.createconfig');
     
     Route::post('/files/upload', [FileController::class, 'upload'])->name('uploadFile');
     Route::get('/files/file/{filename}', [FileController::class, 'show'])->name('showFile');
     Route::delete('/files/{id}', [FileController::class, 'delete'])->name('files.delete');
-
+    
 });
 
 // Route::get('/capture-screenshot', [SiteController::class, 'captureScreenshot']);

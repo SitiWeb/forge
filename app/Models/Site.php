@@ -12,6 +12,7 @@ class Site extends Model
         'server_id',
         'user_id',
         'name',
+        'username',
     ];
 
     public function server()
@@ -21,6 +22,11 @@ class Site extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function wordpressAdmins()
+    {
+        return $this->hasMany(WordpressAdmin::class, 'site_id', 'site_id');
     }
  
 }

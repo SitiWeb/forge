@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use Laravel\Forge\Forge;
+use App\Models\WordpressAdmin;
 use Illuminate\Http\Request;
 use App\Models\Server;
 class DataController extends Controller
@@ -65,6 +66,16 @@ class DataController extends Controller
             sleep(1);
         }   
         $data = json_decode($result[0]->output);
+        foreach ($data as $adminData) {
+            $username = $adminData->user_login;
+            $wordpressUserId = $adminData->ID;
+    
+            // Use updateOrCreate to find or create a WordPress admin record based on the username
+            WordpressAdmin::updateOrCreate(
+                ['username' => $username, 'site_id' => $site],
+                ['wordpress_user_id' => $wordpressUserId]
+            );
+        }
         return response()->json($data);
     }
 
