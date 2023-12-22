@@ -39,6 +39,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 // Define routes that require authentication
 Route::middleware(['auth'])->group(function () {
     Route::get('/servers', [ServerController::class, 'index'])->name('servers.index')->middleware('checkRole:Admin,Moderator');
+    Route::get('/servers/{server}/check-backup-config', [ServerController::class, 'checkBackupConfig'])->name('servers.checkbackup')->middleware('checkRole:Admin,Moderator');
     Route::get('/servers/sync', [ServerController::class, 'syncServers'])->name('servers.sync')->middleware('checkRole:Admin,Moderator');
     Route::get('/servers/{id}', [ServerController::class, 'show'])->name('servers.show')->middleware('checkRole:Admin,Moderator');
 
@@ -64,7 +65,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/databases/sync', [DatabaseController::class, 'syncDatabses'])->name('sites.databases')->middleware('checkRole:Admin,Moderator');
     Route::get('/databaseusers/sync', [DatabaseUserController::class, 'syncDatabseUsers'])->name('sites.syncDatabseUsers')->middleware('checkRole:Admin,Moderator');
 
-   
+    Route::post('/sites/{site}/backupconfig', [SiteController::class, 'backupconfig'])->name('backups.config')->middleware('checkRole:Admin,Moderator');
+    Route::get('/server/{server}/all-backups', [ServerController::class, 'AllBackups'])->name('allbackups.config')->middleware('checkRole:Admin');
     Route::resource('/imports',ImportController::class)->middleware('checkRole:Admin,Moderator');
     Route::resource('/users',UserController::class)->middleware('checkRole:Admin,Moderator');
     Route::resource('/roles',RoleController::class)->middleware('checkRole:Admin');

@@ -62,6 +62,9 @@ class CronController extends Controller
     public function hasWPCron($site){
         $forge = new Forge(config('forge.api_key'));
         $site = Site::where('site_id', $site)->first();
+        if(!$site){
+            return false;
+        }
         $sitedata = $forge->site($site->server_id, $site->site_id);
         $command = "cd /home/" . $sitedata->username . "/" . $sitedata->name . $sitedata->directory .  " && wp cron event run --due-now";
         return $this->hasCronJob($site, $command);
@@ -106,7 +109,7 @@ class CronController extends Controller
         }
     }
 
-    public function createJob($server, $command, $frequency, $user, $wait = true, $minute = null, $hour = null,$day = null,$month = null,$weekday = null){
+    public function createJob($server, $command, $frequency, $user, $wait = true, $minute = '*', $hour = '*',$day = '*',$month = '*',$weekday = '*'){
         $forge = new Forge(config('forge.api_key'));
         if ($frequency == 'custom'){
             $data = [
@@ -127,8 +130,9 @@ class CronController extends Controller
                 'user' => $user,
             ];
         }
-     
-        return $forge->createJob($server, $data, $wait);
+        $result = $forge->createJob($server, $data, $wait);
+        $this->syncCron($server);
+        return $result;
       
     }
 }

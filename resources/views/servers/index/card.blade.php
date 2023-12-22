@@ -6,10 +6,13 @@
                     <a class="sw-link" href="{{ route('servers.show', ['id' => $server->forge_id]) }}">{{ $server->name }}</a>
                 </div>
                 <div  class="py-1">
-                    {{$server->php_version}}, {{$server->region}}
+                    <i class="fa-brands fa-php" style="color: #008000;"></i> {{$server->php_version}}
                 </div>
                 <div  class="py-1">
-                    {{$server->ip_address}}
+                    <i class="fa-solid fa-globe-pointer" style="color: #008000;"></i> {{$server->region}}
+                </div>
+                <div  class="py-1">
+                    <i class="fa-sharp fa-thin fa-network-wired fa-sm" style="color: #008000;"></i> {{$server->ip_address}}
                 </div>
               
             </div>

@@ -9,6 +9,7 @@
                     < <a href="{{ route('servers.index') }}">Back to servers</a>
                         <h3>Server</h3>
                         @include('servers.tables.server')
+                        <a href="{{route('servers.checkbackup',['server' =>$server ])}}" class="btn btn-primary">Check config</a>
                 </div>
             </div>
 

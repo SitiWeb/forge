@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 use App\Library\Form;
+use App\Library\ForgeSite;
 use App\Models\Database;
 use App\Models\DatabaseUser;
 use App\Models\Site;
-
+use App\Library\RemoteUpload;
 use App\Models\Server;
 use Illuminate\Http\Request;
 use Laravel\Forge\Forge;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage; // Import the Storage class
 use Symfony\Component\Process\Process;
+use Symfony\Component\Yaml\Yaml;
 
 class SiteController extends Controller
 {
@@ -161,32 +165,15 @@ class SiteController extends Controller
     }
     public function show($server, $site)
     {
-        #
-        $forge = new Forge(config('forge.api_key'));
+        $forge = new ForgeSite($server, $site);
+        $website = $forge->getSite();
 
-        $website = $forge->site($server, $site);
-
-
-        try {
-            $deploy_log = $website->siteDeploymentLog();
-            // Regular expression to match ANSI escape codes
-            $pattern = '/\e\[\d+(;\d+)*m/';
-            // Remove ANSI escape codes from the string
-            $deploy_log = preg_replace($pattern, '', $deploy_log);
-            $deploy_log = str_replace("\n", '<br>', $deploy_log);
-        } catch (\Exception $e) {
-            // Handle the exception or set a default value
-            $deploy_log = false;
-        }
-
-
-
-
+        $deploy_log = '';//$forge->getDeploymentLog();
         $dns = $this->dnsLookup($website->name);
         $website->dns = $dns;
-        $env = ($forge->siteEnvironmentFile($server, $site));
+        $env = '';//($forge->siteEnvironmentFile($server, $site));
        
-        $deploy_history = $website->getDeploymentHistory();
+        $deploy_history = [];// $website->getDeploymentHistory();
         $form = $this->loginAsForm($server,$site);
         $server = Server::where('forge_id', $server)->first();
         
@@ -365,16 +352,22 @@ class SiteController extends Controller
                 $site = Site::where('site_id', $website->id)->first();
              
                 if ($site) {
-                    $site->update([
+            
+                   
+                    $result = $site->update([
                         'name' => $website->name,
                         'server_id' => $apiServer->id,
+                        'type' => $website->app,
                     ]);
+                    echo $website->app;
                 } else {
                     Site::create([
                         'name' => $website->name,
                         'server_id' => $apiServer->id,
                         'user_id' => 1,
                         'site_id' => $website->id,
+                        'type' => $website->app,
+
                         'username' => $website->username
                     ]);
                 }
@@ -406,9 +399,12 @@ class SiteController extends Controller
         $form->setSubmitText('Login as');
         $sitee = Site::where('site_id', $site)->first();
         $options = [];
-        foreach($sitee->wordpressAdmins as $admin){
-            $options[] =  ['value' => $admin->wordpress_user_id, 'label' => $admin->username];
+        if($sitee){
+            foreach($sitee->wordpressAdmins as $admin){
+                $options[] =  ['value' => $admin->wordpress_user_id, 'label' => $admin->username];
+            }
         }
+        
 
         $form->addField('user_select', 'select', [
             'label' => 'Login as',
@@ -446,6 +442,85 @@ class SiteController extends Controller
        
        
         return response()->json($data);
+    }
+
+    public function backupconfig(Request $request, $site){
+           // Define the validation rules
+            $rules = [
+                'source_directories' => ['required', 'json'],
+                'repositories' => ['required', 'json'],
+                'site' => ['required', 'numeric'],
+                'keep_daily' => ['required', 'numeric'],
+                'keep_weekly' => ['required', 'numeric'],
+                'keep_monthly' => ['required', 'numeric'],
+                'site_config' => ['required', 'string'],
+            ];
+           
+            // Create a validator instance
+            $validator = Validator::make($request->all(), $rules);
+
+            // Check if validation fails
+            if ($validator->fails()) {
+                // If validation fails, return back with the errors
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+            $yamlData = Yaml::parseFile(storage_path('app') . '\config.yaml');
+            $site = Site::where('site_id',$site)->first();
+            // If validation passes, you can access the validated data like this:
+            $validatedData = $validator->validated();
+            $siteconfig = $validatedData['site_config']; 
+            $validatedData['keep_monthly'] = intval($validatedData['keep_monthly']);
+            $validatedData['keep_weekly'] = intval($validatedData['keep_weekly']);
+            $validatedData['keep_daily'] = intval($validatedData['keep_daily']);
+            unset($validatedData['site']);
+            unset($validatedData['site_config']);
+            $validatedData['encryption_passphrase'] = '123qwqw321';
+            $archive_format = $yamlData['archive_name_format'];
+            $archive_format = str_replace('{serverId}',$site->server_id,$archive_format);
+            $validatedData['archive_name_format'] = str_replace('{siteId}',$site->site_id,$archive_format);
+            $new_source=[];
+            foreach($yamlData['source_directories'] as $source){
+            
+                $result = str_replace('{username}',$site->username,$source);
+                $result = str_replace('{site}',$site->name,$result);
+                $new_source[] = $result;
+            }
+            $validatedData['source_directories'] = $new_source;
+            $validatedData['repositories'] = $yamlData['repositories'];
+            $new_data = [];
+            foreach($yamlData['mysql_databases'] as $database){
+                    $result = str_replace('username',$site->username,$database['name']);
+                    $new_data[] = ['name' => $result];   
+            }
+            $validatedData['mysql_databases'] = $new_data;
+            $file = Yaml::dump($validatedData);
+            if (!$file){
+                return redirect()->back()->withErrors([])->withInput();
+            }
+            
+            $tempFilePath = tempnam(sys_get_temp_dir(), 'yaml');
+            file_put_contents($tempFilePath, $file);
+            
+            $remoteUpload = new RemoteUpload('root', storage_path('app') . '\ssh.key', $site->server->ip_address);
+          
+            $result = $remoteUpload->uploadFile($tempFilePath, $siteconfig );
+ 
+            // Check if the upload was successful
+            // Clean up the temporary file
+            unlink($tempFilePath);
+
+            // Close the SFTP connection
+            $remoteUpload->closeConnection();
+   
+            if ($result) {
+                // File uploaded successfully
+                return redirect()->back()->with('success', 'File uploaded successfully');
+            } else {
+                // File upload failed
+                return redirect()->back()->with('error', 'File upload failed');
+            }
+            
+            
     }
 
 

@@ -13,6 +13,7 @@ class Site extends Model
         'user_id',
         'name',
         'username',
+        'type',
     ];
 
     public function server()

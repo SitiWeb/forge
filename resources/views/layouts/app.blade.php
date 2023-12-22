@@ -23,6 +23,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.31.0/ace.min.js" integrity="sha512-nqoLH5VgQWm0Js4wYZ5bzxWLPRIkREwx74zw6M52Z6Fd1F8WMN60cTU0SOMF9Cd4e4cicvNsHg4ShwyJAt9gYg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <!-- Include Bootstrap JavaScript from a CDN -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+<script src="https://kit.fontawesome.com/7aafacfaf9.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://kit.fontawesome.com/7aafacfaf9.css" crossorigin="anonymous">
 
 </head>
 <body>

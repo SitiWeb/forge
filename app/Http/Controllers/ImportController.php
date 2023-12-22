@@ -12,14 +12,14 @@ use PDO;
 
 class importController extends Controller
 {
-    private $ssh_port = 2220;
-    private $ssh_user;
-    private $ssh_host;
-    private $destination_path;
-    private $source_path;
-    private $destination_db_name;
-    private $destination_db_user;
-    private $destination_db_pass;
+    // private $ssh_port = 2220;
+    // private $ssh_user;
+    // private $ssh_host;
+    // private $destination_path;
+    // private $source_path;
+    // private $destination_db_name;
+    // private $destination_db_user;
+    // private $destination_db_pass;
 
     public function index(){
         $imports = Import::all();
