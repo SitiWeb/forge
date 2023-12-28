@@ -14,6 +14,10 @@ class Site extends Model
         'name',
         'username',
         'type',
+        'is_secured',
+        'aliases',
+        'php_version',
+        'directory',
     ];
 
     public function server()

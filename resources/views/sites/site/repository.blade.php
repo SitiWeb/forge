@@ -23,6 +23,6 @@
 </div>
 @endif
 <div class="my-2 d-flex gap-3">
-<a class="btn btn-primary" href="{{route('projects.install',['server'=>$server->forge_id,'site'=>$website->id])}}">Install</a>
-<a class="btn btn-secondary" href="{{route('projects.deploy',['server'=>$server->forge_id,'site'=>$website->id])}}">deploy</a>
+<a class="btn btn-primary" href="{{route('projects.install',['server'=>$website->server->forge_id,'site'=>$website->site_id])}}">Install</a>
+<a class="btn btn-secondary" href="{{route('projects.deploy',['server'=>$website->server->forge_id,'site'=>$website->site_id])}}">deploy</a>
 </div>

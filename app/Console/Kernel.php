@@ -12,10 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('sync:servers')->everyTwentySeconds(); 
-        $schedule->command('sync:sites')->everyTwentySeconds();
-        $schedule->command('sync:db')->everyTwentySeconds(); 
-        $schedule->command('sync:dbusers')->everyTwentySeconds();
+        $schedule->command('sync:servers')->everyFifteenMinutes(); 
+        $schedule->command('sync:sites')->everyFifteenMinutes();
+        $schedule->command('sync:db')->everyFifteenMinutes(); 
+        $schedule->command('sync:dbusers')->everyFifteenMinutes();
         $schedule->command('cashier:run')
     ->hourly() // run as often as you like (daily, monthly, every minute, ...)
     ->withoutOverlapping(); // make sure to include this

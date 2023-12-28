@@ -81,7 +81,7 @@ class FileController extends Controller
 
     public function createConfigFile($site){
         $site = Site::where('site_id',$site)->first();
-        dd($site->database);
+
         // Define the input and output file paths
         $inputFilePath = base_path().'\config.yaml'; // Replace with your input file path
         $outputFilePath = base_path().'\output.yaml'; // Replace with your desired output file path

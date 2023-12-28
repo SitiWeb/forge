@@ -13,7 +13,7 @@
         </tr>
     </thead>
     <tbody>
-            @foreach($jobs as $job)
+            @foreach($server->jobs as $job)
             @if($job->user == 'root')
             @continue
             @endif

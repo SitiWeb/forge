@@ -17,7 +17,7 @@
                 <tr>
                     <td>{{ $website->directory }}</td>
                     <td>{{ $website->status }}</td>
-                    <td>{{ implode(', ',$website->aliases) }}</td> 
+                    <td>{{ implode(', ',json_decode($website->aliases)) }}</td> 
                    
                     <td>@if($website->isSecured)Yes @else No @endif</td>      
                 </tr>

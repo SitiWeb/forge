@@ -81,6 +81,7 @@ class RemoteUpload{
 
         foreach ($files as $localFilePath => $remoteFilePath) {
             // Use SFTP put method to upload each file
+            
             if (!$this->sftp->put($remoteFilePath, $localFilePath, SFTP::SOURCE_LOCAL_FILE)) {
                 $errorMessage = $this->sftp->getLastSFTPError(); // Get the error message
                 $this->closeConnection();
@@ -119,54 +120,67 @@ class RemoteUpload{
 
     public function uploadRootFile($path){
         $localFilePath = storage_path('app'). str_replace('/root','',$path);
+       
         $array = [
             $localFilePath => $path,
         ];
+    
         return $this->uploadFiles($array);
 
     }
-
+ 
     private function createPathIfNotExists( $path)
-{
-    // Split the path into its components
-    $pathComponents = explode('/', $path);
+    {
+        // Split the path into its components
+        $pathComponents = explode('/', $path);
 
-    // Initialize the current path
-    $currentPath = '/';
+        // Initialize the current path
+        $currentPath = '/';
 
-    foreach ($pathComponents as $component) {
-        if (!empty($component)) {
-            $currentPath .= $component . '/';
-            if (!$this->sftp->is_dir($currentPath)) {
-                // If the directory doesn't exist, create it
-                if (!$this->sftp->mkdir($currentPath)) {
-                    // Handle mkdir failure if necessary
-                    return false;
+        foreach ($pathComponents as $component) {
+            if (!empty($component)) {
+             
+                $currentPath .= $component . '/';
+                if (!$this->sftp->is_dir($currentPath)) {
+                    // If the directory doesn't exist, create it
+                    if (!$this->sftp->mkdir($currentPath)) {
+                        // Handle mkdir failure if necessary
+                        return false;
+                    }
                 }
             }
         }
+
+        return true;
     }
 
-    return true;
-}
+    public function uploadFile($localFilePath, $remoteFilePath)
+    {
+        // Ensure the directory structure exists on the remote server
+        $directoryPath = dirname($remoteFilePath);
+        
+        if (!$this->createPathIfNotExists( $directoryPath)) {
+            // Handle directory creation failure if necessary
+            return false;
+        }
 
-public function uploadFile($localFilePath, $remoteFilePath)
-{
-    // Ensure the directory structure exists on the remote server
-    $directoryPath = dirname($remoteFilePath);
-    
-    if (!$this->createPathIfNotExists( $directoryPath)) {
-        // Handle directory creation failure if necessary
-        return false;
+        // Use SFTP put method to upload the file
+        if ($this->sftp->put($remoteFilePath, $localFilePath, SFTP::SOURCE_LOCAL_FILE)) {
+            return true; // File uploaded successfully
+        } else {
+            // Handle file upload failure if necessary
+            return false;
+        }
     }
 
-    // Use SFTP put method to upload the file
-    if ($this->sftp->put($remoteFilePath, $localFilePath, SFTP::SOURCE_LOCAL_FILE)) {
-        return true; // File uploaded successfully
-    } else {
-        // Handle file upload failure if necessary
-        return false;
+    public function uploadScript($scriptname){
+        $filePaths = config('file_paths.backupfiles');
+        $this->connect();
+        foreach($filePaths as $filePath){
+            $localfilePath = storage_path('app'). str_replace('/root','',$filePath);
+            ($this->uploadFile($localfilePath,$filePath));
+        }
+        
     }
-}
 
 }

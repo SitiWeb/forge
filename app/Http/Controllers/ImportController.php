@@ -87,7 +87,7 @@ class importController extends Controller
         $this->destination_db_name = '';
         $this->destination_db_pass = '';
         $this->destination_db_user = '';
-        dd( $this->createMysqldump());
+   
 
         
         $cmd = $this->downloadFiles();

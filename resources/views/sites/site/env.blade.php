@@ -1,4 +1,4 @@
-<div id="editor">{{$env}}</div>
+<div id="editor">@isset($env){{$env}}@endisset</div>
 <script>
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/monokai");

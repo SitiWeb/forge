@@ -34,19 +34,22 @@ class DatabaseController extends Controller
             $databases =$forge->databases($apiServer->id);
             
             foreach($databases as $database){
-        
+                
                 $databasess = Database::where('table_id', $database->id)->first();
                 if ($databasess){
                     $databasess->update([
                         'name' => $database->name,
-                        'server_id' => $database->id,
+                        'server_id' => $apiServer->id,
+                        'status' => $database->status,
                     ]);
                 }
                 else{
                     Database::create([
                         'name' => $database->name,
-                        'table_user_id' => $apiServer->id,
+                        'server_id' => $apiServer->id,
+                        'table_user_id' => '',
                         'user_id' => 1,
+                        'status' => $database->status,
                         'table_id' => $database->id
                     ]);
                 }
@@ -92,7 +95,8 @@ class DatabaseController extends Controller
             [
                 'table_id' => $result->id,
                 'name' => $result->name,
-                'user_id' => Auth::user()->id
+                'user_id' => Auth::user()->id,
+                'server_id' => $request->input('server'),
              ]
             );
             $data = [

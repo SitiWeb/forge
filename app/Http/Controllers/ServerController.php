@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Server;
 use App\Models\Site;
+use App\Models\Database;
 use App\Models\Cron;
 use Illuminate\Http\Request;
 
@@ -12,7 +13,7 @@ use Laravel\Forge\Forge;
 use Symfony\Component\Yaml\Yaml;
 
 use App\Http\Controllers\CronController;
-
+use App\Library\RemoteUpload;
 
 class ServerController extends Controller
 {
@@ -34,15 +35,7 @@ class ServerController extends Controller
     public function show($id)
     {
         $server = Server::where('forge_id', $id)->first(); // Fetch a single server record by ID
-        // Fetch the list of websites associated with the server from the Forge API
-        $forge = new Forge(config('forge.api_key'));
-
-
-        $websites = $forge->sites($server->forge_id);
-        $databases = $forge->databases($server->forge_id);
-        $jobs = Cron::where('server_id', $server->forge_id)->get();
-
-        return view('servers.show', compact('server', 'websites', 'databases', 'jobs'));
+        return view('servers.show', compact('server'));
     }
     public function syncServers()
     {
@@ -99,7 +92,7 @@ class ServerController extends Controller
     public function checkBackupConfig(Server $server)
     {
         $yamlData = Yaml::parseFile(storage_path('app') . '\config.yaml');
-
+   
         $data = Site::where('type', 'WordPress')
             ->where('server_id', $server->forge_id)->get();
         $sites = [];
@@ -120,7 +113,9 @@ class ServerController extends Controller
         $backups = [];
         $result = $backup->checkBackupScriptsCallback($server->ip_address);
         $borg = $backup->checkBackupBorgCallback($server->ip_address);
+
         $config = $backup->checkBackupConfigCallback($server);
+    
         $crons = $backup->checkBackupCronCallback($server);
         if ($result) {
             return view('servers.checkconfig', compact('result', 'borg', 'config', 'sites', 'server', 'crons', 'backups'));

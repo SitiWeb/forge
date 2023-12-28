@@ -2,6 +2,7 @@
 namespace App\Library;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Cron;
+use App\Models\Site;
 use App\Http\Controllers\CronController;
 use Symfony\Component\Yaml\Yaml;
 class BackupClass{
@@ -54,8 +55,8 @@ class BackupClass{
                 }
                 elseif($deco[0] == 'backup'){
                     $archive->type = 'backup';
-                    $site = new ForgeSite($deco[1],$deco[2]);
-                    $archive->site = $site->getSiteData();
+                    $archive->site = Site::where('site_id',$deco[2])->first();
+                    $archive->time = $deco[3].'-'.$deco[4].'-'.$deco[5];
                 }
                 
                 $newData[] = $archive;
@@ -76,6 +77,7 @@ class BackupClass{
             // If a cached result exists, return it
             return $cachedResult;
         }
+        
 
         $remoteUploader = new RemoteSsh('root', storage_path('app') . '\ssh.key', $server);
 
@@ -104,6 +106,7 @@ class BackupClass{
     public function checkBackupConfigCallback($server)
     {
         $remoteUploader = new RemoteUpload('root', storage_path('app') . '\ssh.key', $server->ip_address);
+
         if ($remoteUploader->connect()) {
             $result = [];
             $filePath = '/etc/borgmatic/config.yaml';
@@ -139,9 +142,10 @@ class BackupClass{
 
             $filePath = '/etc/borgmatic.d/config.yaml';
             $directoryContents = $remoteUploader->listDirectory(dirname($filePath));
-            $result['d'] =   ['status' => 'success', 'result' => $directoryContents, 'type' => 'success'];
+         
+            $result['d'] =   ['status' => 'success', 'result' => $directoryContents , 'type' => 'success'];
             if ($directoryContents === false) {
-                $result['d'] = ['status' => 'failed', 'result' => $directoryContents, 'type' => 'not_exist'];
+                $result['d'] = ['status' => 'failed', 'result' => [], 'type' => 'not_exist'];
             }
             return $result;
         }
@@ -151,6 +155,10 @@ class BackupClass{
 
     public function checkBackupscriptsCallback($server)
     {
+
+        $remoteUploader = new RemoteUpload('root', storage_path('app') . '\ssh.key', $server);
+
+        $remoteUploader->uploadScript('test');
         $cacheKey = 'backup_scripts_status_' . $server;
 
         // Attempt to retrieve the result from the cache

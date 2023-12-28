@@ -11,11 +11,11 @@
         </tr>
     </thead>
     <tbody>
-            @foreach($websites as $website)
+            @foreach($server->sites as $website)
             <tr>
                
-                <td>{{ $website->id }}</td>
-                <td><a href="{{route('projects.show',['site'=>$website->id, 'server' => $server->forge_id])}}">{{ $website->name }}</a></td>
+                <td>{{ $website->site_id }}</td>
+                <td><a href="{{route('projects.show',['site'=>$website->site_id, 'server' => $server->forge_id])}}">{{ $website->name }}</a></td>
                 @php
                 $badge_value = $website->status;
                 @endphp

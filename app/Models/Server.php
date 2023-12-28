@@ -17,4 +17,12 @@ class Server extends Model
     {
         return $this->hasMany(Site::class, 'server_id', 'forge_id');
     }
+    public function databases()
+    {
+        return $this->hasMany(Database::class, 'server_id', 'forge_id');
+    }
+    public function jobs()
+    {
+        return $this->hasMany(Cron::class, 'server_id', 'forge_id');
+    }
 }

@@ -11,10 +11,6 @@ use App\Models\Server;
 use Illuminate\Http\Request;
 use Laravel\Forge\Forge;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage; // Import the Storage class
-use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 
 class SiteController extends Controller
@@ -165,19 +161,21 @@ class SiteController extends Controller
     }
     public function show($server, $site)
     {
+        $website = Site::where('site_id', $site)->first();
+      
         $forge = new ForgeSite($server, $site);
-        $website = $forge->getSite();
+        //$ = $forge->getSite();
+        
 
-        $deploy_log = '';//$forge->getDeploymentLog();
+        // $deploy_log = '';//$forge->getDeploymentLog();
         $dns = $this->dnsLookup($website->name);
         $website->dns = $dns;
-        $env = '';//($forge->siteEnvironmentFile($server, $site));
+        // $env = '';//($forge->siteEnvironmentFile($server, $site));
        
-        $deploy_history = [];// $website->getDeploymentHistory();
+        // $deploy_history = [];// $website->getDeploymentHistory();
         $form = $this->loginAsForm($server,$site);
-        $server = Server::where('forge_id', $server)->first();
-        
-        return view('sites.show', compact('website', 'server', 'deploy_log', 'deploy_history','env', 'form'));
+        // $server = Server::where('forge_id', $server)->first();
+        return view('sites.show', compact('website', 'form'));
     }
 
     function deleteSite(Request $request, $server, $site)
@@ -350,7 +348,7 @@ class SiteController extends Controller
             $sites = $forge->sites($apiServer->id);
             foreach ($sites as $website) {
                 $site = Site::where('site_id', $website->id)->first();
-             
+                
                 if ($site) {
             
                    
@@ -358,8 +356,12 @@ class SiteController extends Controller
                         'name' => $website->name,
                         'server_id' => $apiServer->id,
                         'type' => $website->app,
+                        'php_version' => $website->phpVersion,
+                        'aliases' => $website->aliases,
+                        'is_secured' => $website->isSecured,
+                        'directory' => $website->directory,
                     ]);
-                    echo $website->app;
+                   
                 } else {
                     Site::create([
                         'name' => $website->name,
@@ -367,7 +369,10 @@ class SiteController extends Controller
                         'user_id' => 1,
                         'site_id' => $website->id,
                         'type' => $website->app,
-
+                        'php_version' => $website->phpVersion,
+                        'aliases' => $website->aliases,
+                        'is_secured' => $website->isSecured,
+                        'directory' => $website->directory,
                         'username' => $website->username
                     ]);
                 }
@@ -375,8 +380,7 @@ class SiteController extends Controller
                 $processedSiteIds[] = $website->id;
             }
         }
-        // Delete sites that were not processed (not in the $processedSiteIds array)
-        // Delete sites that were not processed (not in the $processedSiteIds array)
+
         Site::whereNotIn('site_id', $processedSiteIds)->delete();
     }
 

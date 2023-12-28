@@ -27,7 +27,7 @@
         @endif
         <div class="row m-2">
             <div class="col justify-content-end d-flex mt-4">
-                <a class="btn btn-danger" href="{{route('projects.delete.site',['server'=>$server->forge_id,'site'=>$website->id])}}">Delete</a>
+                <a class="btn btn-danger" href="{{route('projects.delete.site',['server'=>$website->server->forge_id,'site'=>$website->site_id])}}">Delete</a>
             </div>
         </div>
     </div>

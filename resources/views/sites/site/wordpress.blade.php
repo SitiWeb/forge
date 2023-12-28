@@ -20,12 +20,12 @@ use App\Http\Controllers\CronController;
 
         <?php
         $cron = new CronController();
-        $result = $cron->hasWPCron($website->id);
+        $result = $cron->hasWPCron($website->site_id);
         if ($result){
-            echo '<a href="'.route('wpcron.deletecron',['site'=>$website->id]).'" class="btn btn-danger">Disable WP CRON</a>';
+            echo '<a href="'.route('wpcron.deletecron',['site'=>$website->site_id]).'" class="btn btn-danger">Disable WP CRON</a>';
         }
         else{
-            echo '<a href="'.route('wpcron.createcron',['site'=>$website->id]).'" class="btn btn-success">Enable WP CRON</a>';
+            echo '<a href="'.route('wpcron.createcron',['site'=>$website->site_id]).'" class="btn btn-success">Enable WP CRON</a>';
         }
         ?>
     </div>
@@ -52,7 +52,7 @@ use App\Http\Controllers\CronController;
         var userSelect = $('#user_select');
         $.ajax({
             type: 'GET',
-            url: '{{ env('APP_URL') }}/data/sites/admins/{{ $server->forge_id }}/{{ $website->id }}',
+            url: '{{ env('APP_URL') }}/data/sites/admins/{{ $website->server->forge_id }}/{{ $website->site_id }}',
             success: function(response) {
                 // Handle the success response from the server
                 // Clear any existing options in the select element

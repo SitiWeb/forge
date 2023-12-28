@@ -1,7 +1,7 @@
 <div class=" ">
     <div class="row ">
         <div class="col-12 my-2">
-            < <a href="{{ route('servers.show', ['id' => $server->forge_id]) }}"> {{ $server->name }}</a>
+            < <a href="{{ route('servers.show', ['id' => $website->server->forge_id]) }}"> {{ $website->server->name }}</a>
                 <h2>{{ $website->name }}</h2>
                 <div class="card">
                     <div class="card-body">
@@ -23,7 +23,7 @@
                 <li class="list-group-item"><strong>Username</strong><br>{{ $website->username }}</li>
                 <li class="list-group-item"><strong>PHP version</strong><br>{{ $website->phpVersion }}</li>
                 <li class="list-group-item"><strong>DNS Lookup</strong><br>
-                    @if ($website->dns == $server->ip_address)
+                    @if ($website->dns == $website->server->ip_address)
                         {{ $website->dns }}
                     @else
                         {{ $website->dns }}
@@ -37,7 +37,7 @@
         <div class="col-6 my-2">
             <ul class="list-group">
                 <li class="list-group-item"><strong>Directory</strong><br>{{ $website->directory }}</li>
-                <li class="list-group-item"><strong>Aliases</strong><br>{{ implode(', ', $website->aliases) }}</li>
+                <li class="list-group-item"><strong>Aliases</strong><br>{{ implode(', ', json_decode($website->aliases)) }}</li>
                 <li class="list-group-item"><strong>PHP version</strong><br>{{ $website->phpVersion }}</li>
                 <li class="list-group-item"><strong>Secured?</strong><br>
                     @if ($website->isSecured)
@@ -51,7 +51,7 @@
             </ul>
         </div>
         <div class="d-flex gap-2"> 
-            <a class="btn btn-success" href="{{route('projects.ssl',['server'=>$server->forge_id,'site'=>$website->id])}}">SSL</a>
+            <a class="btn btn-success" href="{{route('projects.ssl',['server'=>$website->server->forge_id,'site'=>$website->site_id])}}">SSL</a>
             
         </div>
     </div>

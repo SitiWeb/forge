@@ -10,7 +10,7 @@
         </tr>
     </thead>
     <tbody>
-            @foreach($databases as $database)
+            @foreach($server->databases as $database)
             <tr>
                 {{-- <td>{{ $database->id }}</td> --}}
                 <td>{{ $database->name }}</td>

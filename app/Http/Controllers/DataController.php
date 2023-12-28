@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 use Laravel\Forge\Forge;
 use App\Models\WordpressAdmin;
 use Illuminate\Http\Request;
+use App\Library\RemoteSsh;
 use App\Models\Server;
+use App\Models\Site;
 class DataController extends Controller
 {
     public function deployment($server, $site, $deployment){
@@ -80,27 +82,22 @@ class DataController extends Controller
     }
 
     function loginUrl(Request $request, $server, $site){
-        $forge = new Forge(config('forge.api_key'));
-        // dd($request->input('command'));
-        $sitedata = $forge->site($server, $site);
-
-        $command = "cd /home/" . $sitedata->username . "/" . $sitedata->name . $sitedata->directory .  " && wp login as ". $request->input('user_select') ." --url-only";
-        $data = $forge->executeSiteCommand($server, $site, ['command' => $command]);
-        $commandId = ($data->id);
-        $result = $forge->getSiteCommand($server, $site, $commandId);
-
-        while ($result[0]->status == 'running' || $result[0]->status == 'waiting'){
-            $result = $forge->getSiteCommand($server, $site, $commandId);
-            sleep(1);
-        }   
-        $url = $result[0]->output;
+        
+        $site = Site::where('site_id', $site)->first();
+        $ip = ($site->server->ip_address);
+        $ssh = new RemoteSsh('root', storage_path('app') . '\ssh.key', $ip);
+        if ($ssh->connect()) {
+            $command = "cd /home/" . $site->username . "/" . $site->name . $site->directory .  " && sudo -u ". $site->username ." wp login as ". $request->input('user_select') ." --url-only";
+        }
+        $result = ($ssh->exec($command));
+        $url = trim($result);
         if (filter_var($url, FILTER_VALIDATE_URL)) {
             // $url is a valid URL
             $data = ['status' => 'success', 'redirect_url' => $url];
             return redirect( $url );
         } else {
             // $url is not a valid URL
-            $data = ['status' => 'error', 'output' =>  $result[0]->output];
+            $data = ['status' => 'error', 'output' =>  $result];
             return response()->json($data);
         }
     }
