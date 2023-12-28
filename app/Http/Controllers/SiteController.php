@@ -357,7 +357,7 @@ class SiteController extends Controller
                         'server_id' => $apiServer->id,
                         'type' => $website->app,
                         'php_version' => $website->phpVersion,
-                        'aliases' => $website->aliases,
+                        'aliases' => json_encode($website->aliases),
                         'is_secured' => $website->isSecured,
                         'directory' => $website->directory,
                     ]);
@@ -370,7 +370,7 @@ class SiteController extends Controller
                         'site_id' => $website->id,
                         'type' => $website->app,
                         'php_version' => $website->phpVersion,
-                        'aliases' => $website->aliases,
+                        'aliases' => json_encode($website->aliases),
                         'is_secured' => $website->isSecured,
                         'directory' => $website->directory,
                         'username' => $website->username
